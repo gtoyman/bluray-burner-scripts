@@ -1,0 +1,32 @@
+#!/bin/sh
+clear
+DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
+[ -z "$DEV" ] && {
+    echo "No optical drive found."
+    exit 1
+}
+echo "BLURAY DISC SESSIONS:"
+echo ""
+dvd+rw-mediainfo /dev/"$DEV" | grep Start || exit 1
+echo ""
+echo -n "Enter Sector Number: "
+read SECTOR
+
+echo "CREATING LOOP DEVICE AS ROOT :"
+LOOP=`sudo losetup -fP --show \
+    -o $(($SECTOR*2048)) \
+    /dev/"$DEV"`
+echo "DONE"
+
+echo -n "MOUNTING SESSION AS ROOT -> "
+sudo mount -t iso9660 -o ro "$LOOP" /home/sprokkel/bluray/ || exit 1
+echo ""
+echo ""
+echo "---------------------"
+echo "/home/sprokkel/bluray"
+echo "---------------------"
+echo ""
+ls -d /home/sprokkel/bluray/*
+echo ""
+play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
+echo "SCRIPT COMPLETED"

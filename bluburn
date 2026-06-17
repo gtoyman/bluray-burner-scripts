@@ -1,0 +1,31 @@
+#!/bin/sh
+clear
+trap 'rm -f /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso' EXIT
+DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
+[ -z "$DEV" ] && {
+    echo "No optical drive found."
+    exit 1
+}
+echo "BLURAY DISC SESSION BURNER"
+echo "Make sure there's a disc in the drive!"
+echo ""
+echo -n "Select a map to write to disc: " 
+read MAP
+
+/usr/bin/xorriso -as mkisofs \
+  -r -J \
+  -V BD-TRACK \
+  -o /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso \
+ "$MAP" || exit 1
+
+/usr/bin/xorriso -as cdrecord \
+  dev=/dev/"$DEV" \
+  speed=6 \
+  -multi \
+  /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso || exit 1
+
+echo "EJECTING DISC"
+eject /dev/"$DEV"
+play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
+rm -f /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso
+echo "SCRIPT COMPLETED."
