@@ -9,12 +9,13 @@ DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
 echo "BLURAY DISC SESSION BURNER"
 echo "Make sure there's a disc in the drive!"
 echo ""
-echo -n "Select a map to write to disc: " 
+echo -n "Select a Folder to Write to the Disc: " 
 read MAP
-
+echo -n "Select a Session-Name: "
+read LABEL
 /usr/bin/xorriso -as mkisofs \
   -r -J \
-  -V BD-TRACK \
+  -V "$LABEL" \
   -o /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso \
  "$MAP" || exit 1
 
