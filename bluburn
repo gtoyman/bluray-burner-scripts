@@ -6,7 +6,9 @@ DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
     echo "No optical drive found."
     exit 1
 }
-echo "BLURAY DISC SESSION BURNER"
+echo "------------------------------"
+echo "- BLURAY DISC SESSION BURNER -"
+echo "------------------------------"
 echo "Make sure there's a disc in the drive!"
 echo ""
 echo -n "Select a Folder to Write to the Disc: " 
