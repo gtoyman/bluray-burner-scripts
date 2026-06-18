@@ -7,8 +7,10 @@ echo "STARTING DISC COPY"
 echo "------------------"
 echo ""
 DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
-[ -z "/dev/$DEV" ] && {
-    echo "No optical drive found."
+[ -z "$DEV" ] && {
+    echo "NO OPTICAL DRIVE FOUND"
+    echo "SCRIPT COMPLETED"
+    echo ""
     exit 1
 }
 DIR="/home/sprokkel/nas/SHARE/BACKUP"
@@ -29,7 +31,7 @@ mapfile -t STARTS < <(
 COUNT=${#STARTS[@]}
 
 if [ "$COUNT" -eq 0 ]; then
-    echo "No sessions found"
+    echo "NO SESSIONS FOUND"
     eject /dev/"$DEV"
     exit 1
 fi
@@ -74,16 +76,18 @@ echo "INSERT DESTINATION DISC"
 echo "Press enter to continue"
 read enter
 
+DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
+
 shopt -s nullglob
 
 FILES=("$DIR"/bd-session-*.iso)
 
-if [ ${#FILES[@]} -eq 0 ]; then
+if [ "${#FILES[@]}" -eq 0 ]; then
     echo "No session ISO files found."
     exit 1
 fi
 
-printf "Found sessions:\n"
+printf "FOUND SESSIONS:\n"
 printf '  %s\n' "${FILES[@]}"
 echo
 
@@ -94,7 +98,7 @@ do
     echo "WRITING $(basename "$ISO")"
     echo "================================================"
 
-    xorriso -as cdrecord \
+    xorriso -as cdrecord -vv \
         dev="/dev/$DEV" \
         -multi \
         "$ISO"
@@ -107,6 +111,8 @@ do
     echo "Finished $(basename $ISO)"
 done
 
+echo ""
+xorriso -indev /dev/"$DEV" -toc
 echo
 echo "All sessions written."
 echo ""
@@ -118,6 +124,6 @@ echo "Done."
 echo ""
 echo "SCRIPT COMPLETED, Ejecting Disc."
 echo ""
-eject "/dev/$DEV"
+eject /dev/"$DEV"
 echo "Press enter to close."
 read enter

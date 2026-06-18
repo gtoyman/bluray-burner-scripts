@@ -107,6 +107,6 @@ echo ""
 play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
 echo "SCRIPT COMPLETED -> SESSION SECTOR $SECTOR = MOUNTED."
 echo ""
-nautilus -w /home/sprokkel/bluray & > /dev/null 2>&1
+nohup nautilus -w /home/sprokkel/bluray & > /dev/null 2>&1
 fi
 done
