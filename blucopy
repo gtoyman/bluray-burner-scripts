@@ -30,6 +30,7 @@ COUNT=${#STARTS[@]}
 
 if [ "$COUNT" -eq 0 ]; then
     echo "No sessions found"
+    eject /dev/"$DEV"
     exit 1
 fi
 
@@ -39,9 +40,9 @@ do
 
     if [ $((i+1)) -lt "$COUNT" ]; then
         y=$((i + 1))
-	echo ""
-	echo "EXTRACTING SESSION - $y - TO HARD-DISK"
-	echo ""
+        echo ""
+        echo "EXTRACTING SESSION - $y - TO HARD-DISK"
+        echo ""
         NEXT=${STARTS[$((i+1))]}
         BLOCKS=$((NEXT - START))
 
@@ -52,7 +53,7 @@ do
            count="$BLOCKS" \
            status=progress
     else
-	echo "EXTRACTING SESSION - $((i+1)) - TO HARD-DISK"
+        echo "EXTRACTING SESSION - $((i+1)) - TO HARD-DISK"
         dd if="$SOURCE" \
            of="$STORE/bd-session-$((i+1)).iso" \
            bs=2048 \
@@ -61,7 +62,12 @@ do
     fi
 done
 
+
 ### WRITE TO DISC
+
+echo "EJECTING SOURCE DISC"
+eject /dev/"$DEV"
+play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
 
 echo ""
 echo "INSERT DESTINATION DISC"

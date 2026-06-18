@@ -4,7 +4,8 @@ udisksctl monitor | while read -r line
 do
     case "$line" in
         *"MediaAvailable:               true"*)
-            pgrep -f gnome-terminal --title="Bluray Disc Sessions" -- /usr/local/bin/blustart >/dev/null 2>&1
-            ;;
+           # pgrep -f gnome-terminal --title="Bluray Disc Sessions" -- /usr/local/bin/blustart >/dev/null 2>&1
+	   gnome-terminal --title="Bluray Disc Sessions" -- bash -c '/usr/local/bin/blustart; exec bash'
+;;
     esac
 done
