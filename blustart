@@ -40,6 +40,7 @@ echo ""
 i=1
 while [ $i -eq 1 ]
 do
+echo >> /tmp/.blulog
 cat /tmp/.blulog
 echo ""
 echo -n "- "
@@ -50,6 +51,7 @@ echo ""
 echo "- Type 'n' to create a 'New Session', or"
 echo "- Type 'Start Sector Number' to 'Load a Session', or"
 echo "- Type 'c' to 'COPY' the 'DISC', or"
+echo "- Type 'm' to 'MOUNT' a 'DVD-VIDEO-DISC', or"
 echo "- Type 'e' to 'Eject', or"
 echo "- Type 'q' to 'Quit'."
 echo ""
@@ -80,6 +82,10 @@ then
 	blucopy /dev/"$DEV"
 	break
 	exit 0
+elif [ "$SECTOR" = "m" ]
+then
+	udisksctl mount -b /dev/"$DEV"
+	nautilus -w /run/media/"$USER"/ >/dev/null 2>&1 &
 else
 blustop
 echo "CREATING LOOP DEVICE AS ROOT :"
@@ -101,6 +107,6 @@ echo ""
 play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
 echo "SCRIPT COMPLETED -> SESSION SECTOR $SECTOR = MOUNTED."
 echo ""
-nautilus -w /home/sprokkel/bluray >/dev/null 2>&1 &
+nautilus -w /home/sprokkel/bluray & > /dev/null 2>&1
 fi
 done
