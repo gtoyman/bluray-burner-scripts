@@ -58,11 +58,18 @@ echo ""
 
 if [ $DISCTYPE -eq 0 ]
 then
-	echo ""
-	echo -n "-"
-	dvd+rw-mediainfo /dev/sr0 | grep "Mounted Media"
-	echo ""
-	echo "- You may able to read this disc by mounting it. Press 'm'."
+	BLANK=`dvd+rw-mediainfo /dev/"$DEV" | grep " Disc status:           blank"`
+	if [ "$BLANK" ]
+	then
+		echo ""
+		echo "- This media is blank."
+	else 
+		echo ""
+		echo -n "-"
+		dvd+rw-mediainfo /dev/"$DEV" | grep "Mounted Media"
+		echo ""
+		echo "- You may able to read this disc by mounting it. Press 'm'."
+	fi
 fi
 
 # RUN USER INTERFACE LOOP
