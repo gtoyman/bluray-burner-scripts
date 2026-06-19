@@ -56,6 +56,7 @@ do
 done
 echo ""
 
+z=0
 if [ $DISCTYPE -eq 0 ]
 then
 	BLANK=`dvd+rw-mediainfo /dev/"$DEV" | grep " Disc status:           blank"`
@@ -63,12 +64,13 @@ then
 	then
 		echo ""
 		echo "- This media is blank."
+		z=1
 	else 
 		echo ""
 		echo -n "-"
 		dvd+rw-mediainfo /dev/"$DEV" | grep "Mounted Media"
 		echo ""
-		echo "- You may able to read this disc by mounting it. Press 'm'."
+		echo "- You may be able to read this media by mounting it. Press 'm'."
 	fi
 fi
 
@@ -83,9 +85,14 @@ blufree
 
 echo ""
 echo "- Type 'n' to 'CREATE A NEW SESSION', or"
-echo "- Type 'start sector nr.' to 'LOAD A SESSION', or"
-echo "- Type 'c' to 'COPY' from SOURCE TO DESTINATION 'DISC', or"
-echo "- Type 'm' to 'MOUNT' a 'VIDEO-DISC', or"
+if [ $z -eq 1 ]
+then
+	z=1
+else
+	echo "- Type 'start sector nr.' to 'LOAD A SESSION', or"
+	echo "- Type 'c' to 'COPY' from SOURCE TO DESTINATION 'DISC', or"
+	echo "- Type 'm' to 'MOUNT' a 'VIDEO-DISC', or"
+fi
 echo "- Type 'e' to 'EJECT THE DISC', or"
 echo "- Type 'q' to 'QUIT'."
 echo ""
@@ -104,15 +111,18 @@ then
 elif [ "$SECTOR" = "e" ] # e = EJECT DRIVE
 then
 	rm -f /tmp/.blulog
+	blustop
 	echo "EJECTING DISC"
 	eject /dev/"$DEV"
-	blustop
+	echo "SCRIPT COMPLETED"
 	break
 	exit 0
 elif [ "$SECTOR" = "q" ] # q = QUIT
 then
         rm -f /tmp/.blulog
+	echo "QUITING"
         blustop
+	echo "SCRIPT COMPLETED"
 	break
 	exit 0
 elif [ "$SECTOR" = "c" ] # c = COPY DISC
