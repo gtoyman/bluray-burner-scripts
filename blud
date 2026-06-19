@@ -5,7 +5,7 @@ do
     case "$line" in
         *"MediaAvailable:               true"*)
 	pgrep -f "/usr/local/bin/blustart" >/dev/null || \
-	gnome-terminal --title="Bluray Disc Sessions" \
+	gnome-terminal --title="Bluray Disc Session Burner" \
     	-- bash -c '/usr/local/bin/blustart; exec bash';;
     esac
 done

@@ -5,6 +5,8 @@ DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
     exit 1
 }
 
+echo ""
+echo -n "- "
 echo -n "Disc Total Free Space: (/dev/$DEV) -> "
 dvd+rw-mediainfo /dev/"$DEV" 2>/dev/null | awk '/Free Blocks:/ {
     split($3,a,"*");

@@ -73,7 +73,7 @@ play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
 
 echo ""
 echo "INSERT DESTINATION DISC"
-echo "Press enter to continue"
+echo "Press enter to continue, or CTRL-c to exit on errors."
 read enter
 
 DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')

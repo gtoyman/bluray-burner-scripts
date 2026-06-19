@@ -1,112 +1,152 @@
 #!/bin/sh
-clear
-blustop
-sleep 3
-clear
+# INTRO
+clear # CLEAR SCREEN
+blustop # CLEAR AND REMOVE AND PREVIOUS MOUNTS AND LOOPS
+sleep 3 # WAIT 3 SECONDS
+clear # CLEAR SCREEN AGAIN
+
+# LOCATE BLURAY DRIVE
 DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
 [ -z "$DEV" ] && {
     echo "No optical drive found."
     exit 1
 }
+
+# SET COUNTER TO 1
 COUNTER=1
-echo "------------------------"
-echo "- BLURAY DISC SESSIONS -"
-echo "------------------------"
+
+# CLEAR ANY EXISTING LOG FILES
+rm -f /tmp/.blulog
+
+# START BLURAY DISC SESSION BURNING
+echo "------------------------------"
+echo "- BLURAY DISC SESSION BURNER -"
+echo "------------------------------"
 echo ""
 echo "- Reading Table Of Contents, Please Wait ..."
 echo -n "- Reading ."
-rm -f /tmp/.blulog
-dvd+rw-mediainfo /dev/"$DEV" 2>/dev/null |
-grep "Start" |
-awk '{sub(/\*2KB$/, "", $4); print $4}' |
+
+# IF THE LOGFILE DOESN'T EXIST, CREATE ONE.
+echo >> /tmp/.blulog
+
+# IF THE DISC IS A SESSIONS DISC, READ THE TABLE OF CONTENTS HERE
+DISCTYPE=0
+dvd+rw-mediainfo /dev/"$DEV" 2>/dev/null |grep "Start" | awk '{sub(/\*2KB$/, "", $4); print $4}' |
 while read SECTOR
 do
     LOOP=$(sudo losetup -f --show -r -o $((SECTOR * 2048)) /dev/"$DEV")
+    LABEL=$(sudo isoinfo -d -i "$LOOP" 2>/dev/null | awk -F': ' '/Volume id:/ {print $2}')
 
-    LABEL=$(sudo isoinfo -d -i "$LOOP" 2>/dev/null |
-            awk -F': ' '/Volume id:/ {print $2}')
-
+    # IF THE SESSION LABEL IS EMPTY, SET EMPTY SESSION LABEL
     if [ -z "$LABEL" ] 
     then 
         LABEL="empty session"
     fi
-    echo "Track Nr. $COUNTER | Start Sector: $SECTOR | Label: $LABEL" >> /tmp/.blulog
+
+    # READ TRACKS ON DISC AND OUTPUT THEM TO THE LOGFILE
+    echo "Track Nr. $COUNTER | Start Sector Nr.: $SECTOR | Label: $LABEL" >> /tmp/.blulog
     echo -n "."
+
+    # REMOVE THE LOOP
     sudo losetup -d "$LOOP"
+
+    # INCREASE COUNTER BY 1
     COUNTER=$((COUNTER + 1))
+    DISCTYPE=$((DISCTYPE + 1))
 done
 echo ""
-echo ""
-i=1
-while [ $i -eq 1 ]
+
+if [ $DISCTYPE -eq 0 ]
+then
+	echo ""
+	echo -n "-"
+	dvd+rw-mediainfo /dev/sr0 | grep "Mounted Media"
+	echo ""
+	echo "- You may able to read this disc by mounting it. Press 'm'."
+fi
+
+# RUN USER INTERFACE LOOP
+i=1; while [ $i -eq 1 ]
 do
-echo >> /tmp/.blulog
 cat /tmp/.blulog
 echo ""
-echo -n "- "
 blufree
-#dvd+rw-mediainfo /dev/"$DEV" | grep Start || exit 1
+
+# MAIN MENU
 
 echo ""
-echo "- Type 'n' to create a 'New Session', or"
-echo "- Type 'Start Sector Number' to 'Load a Session', or"
-echo "- Type 'c' to 'COPY' the 'DISC', or"
-echo "- Type 'm' to 'MOUNT' a 'DVD-VIDEO-DISC', or"
-echo "- Type 'e' to 'Eject', or"
-echo "- Type 'q' to 'Quit'."
+echo "- Type 'n' to 'CREATE A NEW SESSION', or"
+echo "- Type 'start sector nr.' to 'LOAD A SESSION', or"
+echo "- Type 'c' to 'COPY' from SOURCE TO DESTINATION 'DISC', or"
+echo "- Type 'm' to 'MOUNT' a 'VIDEO-DISC', or"
+echo "- Type 'e' to 'EJECT THE DISC', or"
+echo "- Type 'q' to 'QUIT'."
 echo ""
 echo -n "Your Choice: "
 read SECTOR
 echo ""
-if [ "$SECTOR" = "n" ]
+
+# MAIN MENU TRIGGERS
+
+if [ "$SECTOR" = "n" ] # n = NEW SESSION
 then 
-bluburn
-rm -f /tmp/.blulog
-break
-exit 0
-elif [ "$SECTOR" = "e" ]
+	bluburn
+	rm -f /tmp/.blulog
+	break
+	exit 0
+elif [ "$SECTOR" = "e" ] # e = EJECT DRIVE
 then
-rm -f /tmp/.blulog
-eject /dev/"$DEV"
-blustop
-break
-exit 0
-elif [ "$SECTOR" = "q" ]
+	rm -f /tmp/.blulog
+	echo "EJECTING DISC"
+	eject /dev/"$DEV"
+	blustop
+	break
+	exit 0
+elif [ "$SECTOR" = "q" ] # q = QUIT
 then
         rm -f /tmp/.blulog
         blustop
 	break
 	exit 0
-elif [ "$SECTOR" = "c" ]
+elif [ "$SECTOR" = "c" ] # c = COPY DISC
 then
+        rm -f /tmp/.blulog
 	blucopy /dev/"$DEV"
 	break
 	exit 0
-elif [ "$SECTOR" = "m" ]
+elif [ "$SECTOR" = "m" ] # m = MOUNT VIDEO DISC
 then
 	udisksctl mount -b /dev/"$DEV"
-	nautilus -w /run/media/"$USER"/ >/dev/null 2>&1 &
-else
-blustop
-echo "CREATING LOOP DEVICE AS ROOT :"
-LOOP=`sudo losetup -fP --show \
-    -o $(($SECTOR*2048)) \
-    /dev/"$DEV"`
-echo "DONE"
+	nohup nautilus -w /run/media/"$USER"/ >/dev/null 2>&1 &
 
-echo -n "MOUNTING SESSION AS ROOT -> "
-sudo mount -t iso9660 -o ro "$LOOP" /home/sprokkel/bluray/ || exit 1
-echo "DONE"
-echo ""
-echo "---------------------"
-echo "/home/sprokkel/bluray"
-echo "---------------------"
-echo ""
-ls -ld /home/sprokkel/bluray/*
-echo ""
-play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
-echo "SCRIPT COMPLETED -> SESSION SECTOR $SECTOR = MOUNTED."
-echo ""
-nohup nautilus -w /home/sprokkel/bluray & > /dev/null 2>&1
+# THIS ELIF IS FOR MOUNTING A SESSION BY START SECTOR NUMBER
+elif [[ "$SECTOR" =~ ^[0-9]+$ ]];
+then
+	echo "--------------------------------"
+	echo "- LOAD A SESSION BY SECTOR NR. -"
+	echo "--------------------------------"
+	echo ""
+
+	blustop
+	echo "CREATING LOOP DEVICE AS ROOT :"
+	LOOP=`sudo losetup -fP --show -o $(($SECTOR*2048)) /dev/"$DEV"`
+	echo "DONE"
+
+	echo -n "MOUNTING SESSION AS ROOT -> "
+	sudo mount -t iso9660 -o ro "$LOOP" /home/sprokkel/bluray/ || exit 1
+	echo "DONE"
+	echo ""
+	echo "---------------------"
+	echo "/home/sprokkel/bluray"
+	echo "---------------------"
+	echo ""
+	ls -la /home/sprokkel/bluray
+	echo ""
+	play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
+	echo "SESSION MOUNT COMPLETED -> SECTOR $SECTOR = MOUNTED"
+	nohup nautilus -w /home/sprokkel/bluray > /dev/null 2>&1 &
+else 
+	echo "Could not compute, Please try again ..."
+
 fi
 done

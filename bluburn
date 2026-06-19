@@ -1,5 +1,4 @@
 #!/bin/sh
-clear
 trap 'rm -f /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso' EXIT
 DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
 [ -z "$DEV" ] && {
@@ -7,26 +6,39 @@ DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
     exit 1
 }
 echo "------------------------------"
-echo "- BLURAY DISC SESSION BURNER -"
+echo "- CREATE A NEW SESSION/TRACK -"
 echo "------------------------------"
-echo "Make sure there's a disc in the drive!"
 echo ""
-echo -n "Select a Folder to Write to the Disc: " 
+echo "- Make sure there's a disc in the drive!"
+echo ""
+echo -n "- Select a Folder to Write to the Disc, or type 'b' to go back: " 
 read MAP
-echo -n "Select a Session-Name: "
+if [ "$MAP" = "b" ]
+then
+	blustart
+	exit 1;
+fi
+
+echo -n "- Choose a Session Name for the Track: "
 read LABEL
+echo ""
 /usr/bin/xorriso -as mkisofs \
   -r -J \
   -V "$LABEL" \
   -o /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso \
  "$MAP" || exit 1
 
-/usr/bin/xorriso -as cdrecord \
+echo "Press enter to continue, or CTRL-c to exit on errors."
+read enter
+
+/usr/bin/xorriso -as cdrecord -vv \
   dev=/dev/"$DEV" \
   speed=6 \
   -multi \
   /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso || exit 1
 
+echo ""
+xorriso -indev /dev/"$DEV" -toc
 echo "EJECTING DISC"
 eject /dev/"$DEV"
 play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
