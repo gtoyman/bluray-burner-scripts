@@ -37,34 +37,28 @@ else
     DISCTYPE="0"
 fi
 
-DISCTYPE="0"
-
+dvd+rw-mediainfo /dev/"$DEV" 2>/dev/null |grep "Start" | awk '{sub(/\*2KB$/, "", $4); print $4}' |
 while read -r SECTOR
 do
     LOOP=$(sudo losetup -f --show -r -o $((SECTOR * 2048)) /dev/"$DEV")
+    LABEL=$(sudo isoinfo -d -i "$LOOP" 2>/dev/null | awk -F': ' '/Volume id:/ {print $2}')
 
-    LABEL=$(sudo isoinfo -d -i "$LOOP" 2>/dev/null |
-            awk -F': ' '/Volume id:/ {print $2}')
-
+    # IF THE SESSION LABEL IS EMPTY, SET EMPTY SESSION LABEL
     if [ -z "$LABEL" ] 
     then 
-	LABEL="empty session"; 
-    else 
-	DISCTYPE=1 
+        LABEL="empty session"
     fi
 
-    echo "Track Nr. $COUNTER | Start Sector Nr.: $SECTOR | Label: $LABEL" >> /tmp/.blulog
+    # READ TRACKS ON DISC AND OUTPUT THEM TO THE LOGFILE
+    echo "- Track Nr. $COUNTER | Start Sector Nr.: $SECTOR | Label: $LABEL" >> /tmp/.blulog
+    echo -n "."
 
+    # REMOVE THE LOOP
     sudo losetup -d "$LOOP"
 
+    # INCREASE COUNTER BY 1
     COUNTER=$((COUNTER + 1))
-
-done < <(
-    dvd+rw-mediainfo /dev/"$DEV" 2>/dev/null |
-    grep "Start" |
-    awk '{sub(/\*2KB$/, "", $4); print $4}'
-)
-
+done
 echo ""
 z=0
 if [ "$DISCTYPE" = "0" ]
@@ -97,7 +91,6 @@ blufree
 
 # MAIN MENU
 
-echo ""
 echo ""
 echo "- Type 'n' to 'CREATE A NEW SESSION', or"
 if [ $z -eq 1 ]
