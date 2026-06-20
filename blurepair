@@ -16,6 +16,12 @@ echo ""
 echo "- Press enter to continue, or CTRL-c to quit."
 read enter
 
+if [ ! -f /usr/local/bin/blusession.iso ]
+then
+    echo "Repair image missing"
+    exit 1
+fi
+
 xorriso -as cdrecord \
     dev=/dev/"$DEV" \
     -multi \

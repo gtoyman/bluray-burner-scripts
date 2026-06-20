@@ -44,8 +44,6 @@ else
     DISCTYPE="0"
 fi
 
-DISCTYPE="0"
-
 while read -r SECTOR
 do
     LOOP=$(sudo losetup -f --show -r -o $((SECTOR * 2048)) /dev/"$DEV")
