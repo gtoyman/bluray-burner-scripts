@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# GLOBALS
+DIR="/home/sprokkel/nas/bluray"
+
 ### READ FROM DISC
 
 echo "------------------"
@@ -13,9 +16,9 @@ DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
     echo ""
     exit 1
 }
-DIR="/home/sprokkel/nas/SHARE/BACKUP"
+DIR=""$DIR""
 SOURCE="$1"
-STORE="/home/sprokkel/nas/SHARE/BACKUP"
+STORE=""$DIR""
 
 if [ -z "$SOURCE" ]; then
     echo "Usage: $0 /dev/"$DEV""
@@ -119,7 +122,7 @@ echo ""
 echo "DISC COPY COMPLETED."
 echo
 echo "Removing session ISO files..."
-rm -f /home/sprokkel/nas/SHARE/BACKUP/bd-session-*.iso
+rm -f "$DIR"/bd-session-*.iso
 echo "Done."
 echo ""
 echo "SCRIPT COMPLETED, Ejecting Disc."

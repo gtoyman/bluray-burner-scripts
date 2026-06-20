@@ -1,4 +1,9 @@
 #!/bin/sh
+
+# GLOBALS
+DIR="/home/sprokkel/nas/bluray" # TEMPORARY DATA DIRECTORY FOR ISO's.
+MOUNT="/home/sprokkel/bluray"   # SESSION MOUNT DIRECTORY.
+
 # INTRO
 clear # CLEAR SCREEN
 blustop # CLEAR AND REMOVE AND PREVIOUS MOUNTS AND LOOPS
@@ -137,6 +142,7 @@ then
         rm -f /tmp/.blulog
 	echo "QUITING"
         blustop
+	eject /dev/"$DEV"
 	echo "SCRIPT COMPLETED"
 	break
 	exit 0
@@ -146,10 +152,11 @@ then
 	blucopy /dev/"$DEV"
 	break
 	exit 0
-elif [ "$SECTOR" = "m" ] # m = MOUNT VIDEO DISC
+elif [[ "$SECTOR" = "m" && "$SECTOR" != "0" ]] # m = MOUNT VIDEO DISC
 then
 	udisksctl mount -b /dev/"$DEV"
 	nohup nautilus -w /run/media/"$USER"/ >/dev/null 2>&1 &
+	echo "NAUTILUS 1"
 
 # THIS ELIF IS FOR MOUNTING A SESSION BY START SECTOR NUMBER
 elif [[ "$SECTOR" =~ ^[0-9]+$ ]];
@@ -165,18 +172,20 @@ then
 	echo "DONE"
 
 	echo -n "MOUNTING SESSION AS ROOT -> "
-	sudo mount -t iso9660 -o ro "$LOOP" /home/sprokkel/bluray/ || exit 1
+	sudo mount -t iso9660 -o ro "$LOOP" "$MOUNT" || exit 1
 	echo "DONE"
 	echo ""
 	echo "---------------------"
-	echo "/home/sprokkel/bluray"
+	echo "$MOUNT"
 	echo "---------------------"
 	echo ""
-	ls -la /home/sprokkel/bluray
+	ls -la "$MOUNT"
 	echo ""
 	play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
 	echo "SESSION MOUNT COMPLETED -> SECTOR $SECTOR = MOUNTED"
-	nohup nautilus -w /home/sprokkel/bluray > /dev/null 2>&1 &
+	nohup nautilus -w /home/sprokkel/bluray >/dev/null 2>&1 &
+	echo "NAUTILUS 2"
+	
 else 
 	echo "Could not compute, Please try again ..."
 

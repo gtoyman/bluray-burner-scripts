@@ -1,5 +1,10 @@
 #!/bin/sh
-trap 'rm -f /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso' EXIT
+
+# GLOBALS
+DIR="/home/sprokkel/nas/bluray"
+
+trap 'rm -f "$DIR"/bd-image.iso' EXIT
+
 DEV=$(lsblk -ndo NAME,TYPE | awk '$2=="rom"{print $1; exit}')
 [ -z "$DEV" ] && {
     echo "No optical drive found."
@@ -18,15 +23,20 @@ then
 	blustart
 	exit 1;
 fi
-
+if [ "$MAP" ]
+then
+	ls -laR "$MAP" > /tmp/CONTENTS.txt
+fi
 echo -n "- Choose a Session Name for the Track: "
 read LABEL
 echo ""
 /usr/bin/xorriso -as mkisofs \
   -r -J \
   -V "$LABEL" \
-  -o /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso \
- "$MAP" || exit 1
+  -o "$DIR"/bd-image.iso \
+ "$MAP" \
+/tmp/CONTENTS.txt || exit 1
+rm -f /tmp/CONTENTS.txt
 
 echo "Press enter to continue, or CTRL-c to exit on errors."
 read enter
@@ -35,12 +45,12 @@ read enter
   dev=/dev/"$DEV" \
   speed=6 \
   -multi \
-  /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso || exit 1
+  "$DIR"/bd-image.iso || exit 1
 
 echo ""
 xorriso -indev /dev/"$DEV" -toc
 echo "EJECTING DISC"
 eject /dev/"$DEV"
 play /usr/share/sounds/freedesktop/stereo/complete.oga > /dev/null 2>&1
-rm -f /home/sprokkel/nas/SHARE/BACKUP/bd-image.iso
+rm -f "$DIR"/bd-image.iso
 echo "SCRIPT COMPLETED."
