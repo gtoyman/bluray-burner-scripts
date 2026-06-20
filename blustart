@@ -115,7 +115,6 @@ else
 	echo "- Type 'c' to 'COPY' from SOURCE TO DESTINATION 'DISC', or"
 	echo "- Type 'm' to 'MOUNT' a 'VIDEO-DISC', or"
 fi
-echo "- Type 'e' to 'EJECT THE DISC', or"
 echo "- Type 'q' to 'QUIT'."
 echo ""
 echo -n "Your Choice: "
@@ -128,15 +127,6 @@ if [ "$SECTOR" = "n" ] # n = NEW SESSION
 then 
 	bluburn
 	rm -f /tmp/.blulog
-	break
-	exit 0
-elif [ "$SECTOR" = "e" ] # e = EJECT DRIVE
-then
-	rm -f /tmp/.blulog
-	blustop
-	echo "EJECTING DISC"
-	eject /dev/"$DEV"
-	echo "SCRIPT COMPLETED"
 	break
 	exit 0
 elif [ "$SECTOR" = "q" ] # q = QUIT
