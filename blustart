@@ -1,4 +1,6 @@
 #!/bin/sh
+echo "Press enter to continue, or CTRL-c to exit."
+read enter
 
 # GLOBALS
 DIR="/home/sprokkel/nas/bluray" # TEMPORARY DATA DIRECTORY FOR ISO's.
