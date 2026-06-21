@@ -44,6 +44,9 @@ else
     DISCTYPE="0"
 fi
 
+echo "DISC INFORMATION" >> /tmp/.blulog
+echo "" >> /tmp/.blulog
+
 while read -r SECTOR
 do
     LOOP=$(sudo losetup -f --show -r -o $((SECTOR * 2048)) /dev/"$DEV")
@@ -103,6 +106,7 @@ blufree
 # MAIN MENU
 
 echo ""
+echo "COMMAND INTERFACE"
 echo ""
 echo "- Type 'n' to 'CREATE A NEW SESSION', or"
 if [ $z -eq 1 ]
@@ -112,8 +116,9 @@ else
 	echo "- Type 'start sector nr.' to 'LOAD A SESSION', or"
 	echo "- Type 'c' to 'COPY' from SOURCE TO DESTINATION 'DISC', or"
 	echo "- Type 'm' to 'MOUNT' a 'VIDEO-DISC', or"
+	echo "- Type 'v' for 'DATA VERIFICATION', or"
 fi
-echo "- Type 'q' to 'QUIT'."
+echo "- Type 'q' to 'EJECT & QUIT', or CTRL-c to exit."
 echo ""
 echo -n "Your Choice: "
 read SECTOR
@@ -136,6 +141,10 @@ then
 	echo "SCRIPT COMPLETED"
 	break
 	exit 0
+elif [ "$SECTOR" = "v" ] # v = DATA VERIFICATION
+then
+	bluverify
+	
 elif [ "$SECTOR" = "c" ] # c = COPY DISC
 then
         rm -f /tmp/.blulog
@@ -151,6 +160,7 @@ then
 # THIS ELIF IS FOR MOUNTING A SESSION BY START SECTOR NUMBER
 elif [[ "$SECTOR" =~ ^[0-9]+$ ]];
 then
+	clear
 	echo "--------------------------------"
 	echo "- LOAD A SESSION BY SECTOR NR. -"
 	echo "--------------------------------"

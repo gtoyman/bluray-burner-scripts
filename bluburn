@@ -1,5 +1,5 @@
 #!/bin/sh
-
+clear
 # GLOBALS
 DIR="/home/sprokkel/nas/bluray"
 
@@ -25,7 +25,9 @@ then
 fi
 if [ "$MAP" ]
 then
+	echo "CREATING CONTENTS.txt FILE, Please wait ..."
 	ls -laR "$MAP" > /tmp/CONTENTS.txt
+	echo "DONE"
 fi
 echo -n "- Choose a Session Name for the Track: "
 read LABEL

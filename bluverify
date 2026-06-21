@@ -1,0 +1,35 @@
+#!/bin/sh
+clear
+echo "---------------------------------"
+echo "- BLURAY DISC VERIFICATION TOOL -"
+echo "---------------------------------"
+echo ""
+echo "VERIFYING SOURCE AND DESTINATION PATH"
+echo ""
+echo -n "Enter path to SOURCE file(s):"
+read source
+echo -n "Enter path to DESTINATION file(s):"
+read destination
+echo ""
+echo -n "Creating source verification checksum."
+cd "$source"; find . -type f -exec sha256sum "{}" \; | sort > /tmp/bluverify-source.sha
+echo "done."
+echo -n "Creating destination verification checksum."
+cd "$destination"; find . -type f -exec sha256sum "{}" \; | sort > /tmp/bluverify-destination.sha
+echo "done."
+echo ""
+echo -n "Verification Result: "
+RESULT=`diff /tmp/bluverify-source.sha /tmp/bluverify-destination.sha | wc -l`
+echo "done"
+echo ""
+if [ $RESULT -le 2 ]
+then
+	echo "VERIFICATION = SUCCESSFULL"
+else
+	echo "VERIFICATION = FAILED"
+fi
+rm -f /tmp/bluverify-source.sha /tmp/bluverify-destination.sha
+echo ""
+echo "SCRIPT COMPLETED"
+echo "Press enter to continue."
+read enter
